@@ -1,19 +1,47 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+describe("DSA-sample", function () {
+  let dsaSample, dsa, owner;
+  const ethAddr = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+  function set_balance(_address) {
+    network.provider.send("hardhat_setBalance", [
+      _address,
+      ethers.utils.parseEther("10.0").toHexString(),
+    ]);
+  }
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+  beforeEach(async () => {
+    dsaSample = await ethers.getContractFactory("dsa_sample");
+    dsa = await dsaSample.deploy();
+    [owner, add1, add2] = await ethers.getSigners();
+    set_balance(owner.address);
+    //console.log(owner.address);
+    await dsa.deployed();
+  });
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+  it("Should deploy successfully", async function () {
+    console.log("Successfully deployed!");
+  });
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+  it("Should build dsa", async () => {
+    const tx = await dsa.accountX(owner.address, 2);
+    //console.log(tx);
+  });
+
+  it("should transfer ETH to DSA", async () => {
+    const spell = {
+      connector: "basic",
+      method: "deposit",
+      args: [ethAddr, ethers.utils.parseEther("1.0"), 0, 0],
+    };
+    const tx = await dsa.transferEth(
+      owner.address,
+      2,
+      ethers.utils.parseEther("1.0").toHexString(),
+      ["COMPOUND-A"],
+      web3.eth.abi.encodeFunctionSignature(spell)
+    );
   });
 });
