@@ -5,6 +5,50 @@ describe("DSA-sample", function () {
   let dsaSample, dsaWrapper, owner;
   const ethAddr = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
+  const paras = [
+    ["ETH-A", `${ethers.utils.parseEther("0.5")}`, "0", "0"],
+    ["DAI-A", `${ethers.utils.parseEther("0.5")}`, "0", "0"],
+  ];
+
+  const jsonABI = [
+    {
+      inputs: [
+        { internalType: "string", name: "tokenId", type: "string" },
+        { internalType: "uint256", name: "amt", type: "uint256" },
+        { internalType: "uint256", name: "getId", type: "uint256" },
+        { internalType: "uint256", name: "setId", type: "uint256" },
+      ],
+      name: "deposit",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        { internalType: "string", name: "tokenId", type: "string" },
+        { internalType: "uint256", name: "amt", type: "uint256" },
+        { internalType: "uint256", name: "getId", type: "uint256" },
+        { internalType: "uint256", name: "setId", type: "uint256" },
+      ],
+      name: "borrow",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        { internalType: "string", name: "tokenId", type: "string" },
+        { internalType: "uint256", name: "amt", type: "uint256" },
+        { internalType: "uint256", name: "getId", type: "uint256" },
+        { internalType: "uint256", name: "setId", type: "uint256" },
+      ],
+      name: "withdraw",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+    },
+  ];
+
   function set_balance(_address) {
     network.provider.send("hardhat_setBalance", [
       _address,
@@ -38,25 +82,34 @@ describe("DSA-sample", function () {
   });
 
   it("Should deposit eth to compound", async () => {
-    const para = [ethAddr, `${ethers.utils.parseEther("0.5")}`, "0", "0"];
-
-    const jsonABI = {
-      inputs: [
-        { internalType: "address", name: "token", type: "address" },
-        { internalType: "uint256", name: "amt", type: "uint256" },
-        { internalType: "uint256", name: "getId", type: "uint256" },
-        { internalType: "uint256", name: "setId", type: "uint256" },
-      ],
-      name: "deposit",
-      outputs: [],
-      stateMutability: "payable",
-      type: "function",
-    };
-
     const tx = await dsaWrapper.deposit(
       2,
       ["COMPOUND-A"],
-      web3.eth.abi.encodeFunctionCall(jsonABI, para),
+      [web3.eth.abi.encodeFunctionCall(jsonABI[0], paras[0])],
+      {
+        value: ethers.utils.parseEther("1.0").toHexString(),
+      }
+    );
+  });
+
+  it("Should borrow DAI from compound", async () => {
+    const tx = await dsaWrapper.Borrow(
+      2,
+      ["COMPOUND-A"],
+      [web3.eth.abi.encodeFunctionCall(jsonABI[0], paras[0])],
+      [web3.eth.abi.encodeFunctionCall(jsonABI[1], paras[1])],
+      {
+        value: ethers.utils.parseEther("1.0").toHexString(),
+      }
+    );
+  });
+
+  it("Should withdraw DAI to contract", async () => {
+    const tx = await dsaWrapper.Withdraw(
+      2,
+      ["COMPOUND-A"],
+      [web3.eth.abi.encodeFunctionCall(jsonABI[0], paras[0])],
+      [web3.eth.abi.encodeFunctionCall(jsonABI[1], paras[1])],
       {
         value: ethers.utils.parseEther("1.0").toHexString(),
       }
