@@ -2,6 +2,7 @@
 pragma solidity ^0.8.3;
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // main contract is at last - go check there
 
@@ -409,7 +410,9 @@ contract InstaImplementationM1 is Constants {
 
 contract dsa_sample {
     address instaIndex = 0x2971AdFa57b20E5a416aE5a708A8655A9c74f723;
+    address daiAddr = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     InstaIndex dsa = InstaIndex(instaIndex);
+    IERC20 dai = IERC20(daiAddr);
 
     receive() external payable {}
 
@@ -422,6 +425,7 @@ contract dsa_sample {
     }
 
     function transferEth(uint256 accountVersion) public payable {
+        // 1. creating account (wallet)
         address account = dsa.build(address(this), accountVersion, address(0));
         //console.log(_owner.balance);
         //console.log(account.balance);
@@ -435,13 +439,16 @@ contract dsa_sample {
         string[] calldata _targets,
         bytes[] calldata _datas
     ) public payable {
+        // 1. creating account (wallet)
         address account = dsa.build(address(this), accountVersion, address(0));
+        // 2. transfering ETH to dsa-wallet
         (bool sent, ) = account.call{value: msg.value}("");
+        //console.log(account.balance);
         require(sent, "Failed to send Ether");
         //3. Depositing Ether to compound
         // _target = ["COMPOUND-A"]
         // _origin = address(0)
-        // _datas = encode of spell
+        // _datas = web3.eth.abi.encodeFunctionCall(JSON_ABI, PARAMS)
         require(_targets.length > 0, "Please provide a target");
         InstaImplementationM1(payable(account)).cast(
             _targets,
@@ -451,15 +458,64 @@ contract dsa_sample {
     }
 
     function Borrow(
-        address payable _account,
+        uint256 accountVersion,
         string[] calldata _targets,
-        bytes[] calldata _datas,
-        address _origin
-    ) public {
+        bytes[] calldata _datas0,
+        bytes[] calldata _datas
+    ) public payable {
+        // 1. creating account (wallet)
+        address account = dsa.build(address(this), accountVersion, address(0));
+        // 2. transfering ETH to dsa-wallet
+        (bool sent, ) = account.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+        //3. Depositing Ether to compound
+        require(_targets.length > 0, "Please provide a target");
+        InstaImplementationM1(payable(account)).cast(
+            _targets,
+            _datas0,
+            address(0)
+        );
         //4. Borrow Dai from compound
         require(_targets.length > 0, "Please provide a target");
-        InstaImplementationM1(_account).cast(_targets, _datas, _origin);
+        InstaImplementationM1(payable(account)).cast(
+            _targets,
+            _datas,
+            address(0)
+        );
     }
 
-    function Withdraw() public {}
+    function Withdraw(
+        uint256 accountVersion,
+        string[] calldata _targets,
+        bytes[] calldata _datas0,
+        bytes[] calldata _datas
+    ) public payable {
+        // 1. creating account (wallet)
+        address account = dsa.build(address(this), accountVersion, address(0));
+        // 2. transfering ETH to dsa-wallet
+        (bool sent, ) = account.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+        //3. Depositing Ether to compound
+        require(_targets.length > 0, "Please provide a target");
+        InstaImplementationM1(payable(account)).cast(
+            _targets,
+            _datas0,
+            address(0)
+        );
+        //4. Borrow Dai from compound
+        InstaImplementationM1(payable(account)).cast(
+            _targets,
+            _datas,
+            address(0)
+        );
+        // 5. transfering DAI to contract
+        // console.log(dai.balanceOf(account));
+        dai.approve(account, dai.balanceOf(account));
+        bool success = dai.transferFrom(
+            account,
+            address(this),
+            dai.balanceOf(account)
+        );
+        require(success, "Failed to withdraw DAI");
+    }
 }
