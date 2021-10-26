@@ -425,34 +425,33 @@ contract dsa_sample {
         return account;
     }
 
-    function transferEth(
-        address _owner,
+    function transferEth(uint256 accountVersion) public payable {
+        address account = dsa.build(msg.sender, accountVersion, address(0));
+        //console.log(_owner.balance);
+        //console.log(account.balance);
+        //2. Transfering ETH to DSA
+        (bool sent, ) = account.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+    }
+
+    function deposit(
         uint256 accountVersion,
-        uint256 _amount,
         string[] calldata _targets,
         bytes[] calldata _datas
-    ) public {
-        address account = dsa.build(_owner, accountVersion, address(0));
-        //2. Transfering ETH to DSA
-        InstaImplementationM1(payable(account)).cast{value: 0}(
+    ) public payable {
+        address account = dsa.build(msg.sender, accountVersion, address(0));
+        (bool sent, ) = account.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+        //3. Depositing Ether to compound
+        // _target = ["COMPOUND-A"]
+        // _origin = address(0)
+        // _datas = encode of spell
+        require(_targets.length > 0, "Please provide a target");
+        InstaImplementationM1(payable(account)).cast(
             _targets,
             _datas,
             address(0)
         );
-    }
-
-    function deposit(
-        address payable _account,
-        string[] calldata _targets,
-        bytes[] calldata _datas,
-        address _origin
-    ) public {
-        //3. Depositing Ether to compound
-        // _target = ["0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"]
-        // _origin = address(0)
-        // _datas = encode of spell
-        require(_targets.length > 0, "Please provide a target");
-        InstaImplementationM1(_account).cast(_targets, _datas, _origin);
     }
 
     function Borrow(
