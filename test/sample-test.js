@@ -38,15 +38,25 @@ describe("DSA-sample", function () {
   });
 
   it("Should deposit eth to compound", async () => {
-    const spell = {
-      connector: "compound",
-      method: "deposit",
-      args: [ethAddr, ethers.utils.parseEther("0.5"), 0, 0],
+    const para = [ethAddr, `${ethers.utils.parseEther("0.5")}`, "0", "0"];
+
+    const jsonABI = {
+      inputs: [
+        { internalType: "address", name: "token", type: "address" },
+        { internalType: "uint256", name: "amt", type: "uint256" },
+        { internalType: "uint256", name: "getId", type: "uint256" },
+        { internalType: "uint256", name: "setId", type: "uint256" },
+      ],
+      name: "deposit",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
     };
+
     const tx = await dsa.deposit(
       2,
       ["COMPOUND-A"],
-      web3.eth.abi.encodeFunctionSignature(spell),
+      web3.eth.abi.encodeFunctionCall(jsonABI, para),
       {
         value: ethers.utils.parseEther("1.0").toHexString(),
       }
