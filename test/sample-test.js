@@ -31,17 +31,25 @@ describe("DSA-sample", function () {
   });
 
   it("should transfer ETH to DSA", async () => {
+    const tx = await dsa.transferEth(2, {
+      value: ethers.utils.parseEther("1.0").toHexString(),
+    });
+    //console.log(tx);
+  });
+
+  it("Should deposit eth to compound", async () => {
     const spell = {
-      connector: "basic",
+      connector: "compound",
       method: "deposit",
-      args: [ethAddr, ethers.utils.parseEther("1.0"), 0, 0],
+      args: [ethAddr, ethers.utils.parseEther("0.5"), 0, 0],
     };
-    const tx = await dsa.transferEth(
-      owner.address,
+    const tx = await dsa.deposit(
       2,
-      ethers.utils.parseEther("1.0").toHexString(),
       ["COMPOUND-A"],
-      web3.eth.abi.encodeFunctionSignature(spell)
+      web3.eth.abi.encodeFunctionSignature(spell),
+      {
+        value: ethers.utils.parseEther("1.0").toHexString(),
+      }
     );
   });
 });
