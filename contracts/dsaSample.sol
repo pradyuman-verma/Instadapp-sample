@@ -413,20 +413,16 @@ contract dsa_sample {
 
     receive() external payable {}
 
-    function accountX(address _owner, uint256 accountVersion)
-        public
-        returns (address)
-    {
+    function accountX(uint256 accountVersion) public returns (address) {
         //1. Creating DSA
-        // _owner - address of the owner
         // accountVersion - 2
         // origin - address(0)
-        address account = dsa.build(_owner, accountVersion, address(0));
+        address account = dsa.build(address(this), accountVersion, address(0));
         return account;
     }
 
     function transferEth(uint256 accountVersion) public payable {
-        address account = dsa.build(msg.sender, accountVersion, address(0));
+        address account = dsa.build(address(this), accountVersion, address(0));
         //console.log(_owner.balance);
         //console.log(account.balance);
         //2. Transfering ETH to DSA
@@ -439,7 +435,7 @@ contract dsa_sample {
         string[] calldata _targets,
         bytes[] calldata _datas
     ) public payable {
-        address account = dsa.build(msg.sender, accountVersion, address(0));
+        address account = dsa.build(address(this), accountVersion, address(0));
         (bool sent, ) = account.call{value: msg.value}("");
         require(sent, "Failed to send Ether");
         //3. Depositing Ether to compound

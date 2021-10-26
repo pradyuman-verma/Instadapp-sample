@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("DSA-sample", function () {
-  let dsaSample, dsa, owner;
+  let dsaSample, dsaWrapper, owner;
   const ethAddr = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
   function set_balance(_address) {
@@ -14,11 +14,11 @@ describe("DSA-sample", function () {
 
   beforeEach(async () => {
     dsaSample = await ethers.getContractFactory("dsa_sample");
-    dsa = await dsaSample.deploy();
+    dsaWrapper = await dsaSample.deploy();
     [owner, add1, add2] = await ethers.getSigners();
     set_balance(owner.address);
     //console.log(owner.address);
-    await dsa.deployed();
+    await dsaWrapper.deployed();
   });
 
   it("Should deploy successfully", async function () {
@@ -26,12 +26,12 @@ describe("DSA-sample", function () {
   });
 
   it("Should build dsa", async () => {
-    const tx = await dsa.accountX(owner.address, 2);
+    const tx = await dsaWrapper.accountX(2);
     //console.log(tx);
   });
 
   it("should transfer ETH to DSA", async () => {
-    const tx = await dsa.transferEth(2, {
+    const tx = await dsaWrapper.transferEth(2, {
       value: ethers.utils.parseEther("1.0").toHexString(),
     });
     //console.log(tx);
@@ -53,7 +53,7 @@ describe("DSA-sample", function () {
       type: "function",
     };
 
-    const tx = await dsa.deposit(
+    const tx = await dsaWrapper.deposit(
       2,
       ["COMPOUND-A"],
       web3.eth.abi.encodeFunctionCall(jsonABI, para),
