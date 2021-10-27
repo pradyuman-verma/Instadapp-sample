@@ -3,6 +3,7 @@ const { ethers } = require("hardhat");
 
 describe("DSA-sample", function () {
   let dsaSample, dsaWrapper, owner;
+  const daiAddr = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
   const ethAddr = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
   const paras = [
@@ -37,13 +38,17 @@ describe("DSA-sample", function () {
     },
     {
       inputs: [
-        { internalType: "string", name: "tokenId", type: "string" },
+        { internalType: "address", name: "token", type: "address" },
         { internalType: "uint256", name: "amt", type: "uint256" },
+        { internalType: "address payable", name: "to", type: "address" },
         { internalType: "uint256", name: "getId", type: "uint256" },
         { internalType: "uint256", name: "setId", type: "uint256" },
       ],
       name: "withdraw",
-      outputs: [],
+      outputs: [
+        { internalType: "string", name: "_eventName", type: "string" },
+        { internalType: "bytes", name: "_eventParam", type: "bytes" },
+      ],
       stateMutability: "payable",
       type: "function",
     },
@@ -108,8 +113,18 @@ describe("DSA-sample", function () {
     const tx = await dsaWrapper.Withdraw(
       2,
       ["COMPOUND-A"],
+      ["BASIC-A"],
       [web3.eth.abi.encodeFunctionCall(jsonABI[0], paras[0])],
       [web3.eth.abi.encodeFunctionCall(jsonABI[1], paras[1])],
+      [
+        web3.eth.abi.encodeFunctionCall(jsonABI[2], [
+          daiAddr,
+          `5000000000`,
+          owner.address,
+          "0",
+          "0",
+        ]),
+      ],
       {
         value: ethers.utils.parseEther("1.0").toHexString(),
       }
