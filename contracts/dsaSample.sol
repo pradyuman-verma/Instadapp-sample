@@ -476,7 +476,6 @@ contract dsa_sample {
             address(0)
         );
         //4. Borrow Dai from compound
-        require(_targets.length > 0, "Please provide a target");
         InstaImplementationM1(payable(account)).cast(
             _targets,
             _datas,
@@ -486,8 +485,10 @@ contract dsa_sample {
 
     function Withdraw(
         uint256 accountVersion,
+        string[] calldata _targets0,
         string[] calldata _targets,
         bytes[] calldata _datas0,
+        bytes[] calldata _datas1,
         bytes[] calldata _datas
     ) public payable {
         // 1. creating account (wallet)
@@ -498,24 +499,25 @@ contract dsa_sample {
         //3. Depositing Ether to compound
         require(_targets.length > 0, "Please provide a target");
         InstaImplementationM1(payable(account)).cast(
-            _targets,
+            _targets0,
             _datas0,
             address(0)
         );
         //4. Borrow Dai from compound
         InstaImplementationM1(payable(account)).cast(
+            _targets0,
+            _datas1,
+            address(0)
+        );
+        // 5. transfering DAI to contract
+        //console.log(dai.balanceOf(account));
+        //console.log(dai.balanceOf(msg.sender));
+        InstaImplementationM1(payable(account)).cast(
             _targets,
             _datas,
             address(0)
         );
-        // 5. transfering DAI to contract
         // console.log(dai.balanceOf(account));
-        dai.approve(account, dai.balanceOf(account));
-        bool success = dai.transferFrom(
-            account,
-            address(this),
-            dai.balanceOf(account)
-        );
-        require(success, "Failed to withdraw DAI");
+        // console.log(dai.balanceOf(msg.sender));
     }
 }
