@@ -6,11 +6,6 @@ describe("DSA-sample", function () {
   const daiAddr = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
   const ethAddr = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-  const paras = [
-    ["ETH-A", `${ethers.utils.parseEther("0.5")}`, "0", "0"],
-    ["DAI-A", `${ethers.utils.parseEther("0.5")}`, "0", "0"],
-  ];
-
   const jsonABI = [
     {
       inputs: [
@@ -70,61 +65,27 @@ describe("DSA-sample", function () {
     await dsaWrapper.deployed();
   });
 
-  it("Should deploy successfully", async function () {
-    console.log("Successfully deployed!");
+  it("Should Deploy successfully", async () => {
+    console.log("Deployed Successfully");
   });
 
-  it("Should build dsa", async () => {
-    const tx = await dsaWrapper.accountX(2);
-    //console.log(tx);
-  });
+  it("Should create DSA, transfer Eth to dsa-wallet, deposit eth to compound and, borrow DAI from compound, withdraw DAI from compound in single transaction", async () => {
+    const params = [
+      ["ETH-A", `${ethers.utils.parseEther("0.5")}`, "0", "0"],
+      ["DAI-A", `${ethers.utils.parseEther("0.5")}`, "0", "0"],
+      [daiAddr, `5000000000`, owner.address, "0", "0"],
+    ];
 
-  it("should transfer ETH to DSA", async () => {
-    const tx = await dsaWrapper.transferEth(2, {
-      value: ethers.utils.parseEther("1.0").toHexString(),
-    });
-    //console.log(tx);
-  });
+    const [deposit_calldata, borrow_calldata, withdraw_calldata] = [
+      web3.eth.abi.encodeFunctionCall(jsonABI[0], params[0]),
+      web3.eth.abi.encodeFunctionCall(jsonABI[1], params[1]),
+      web3.eth.abi.encodeFunctionCall(jsonABI[2], params[2]),
+    ];
 
-  it("Should deposit eth to compound", async () => {
-    const tx = await dsaWrapper.deposit(
+    const tx = await dsaWrapper.accountX(
       2,
-      ["COMPOUND-A"],
-      [web3.eth.abi.encodeFunctionCall(jsonABI[0], paras[0])],
-      {
-        value: ethers.utils.parseEther("1.0").toHexString(),
-      }
-    );
-  });
-
-  it("Should borrow DAI from compound", async () => {
-    const tx = await dsaWrapper.Borrow(
-      2,
-      ["COMPOUND-A"],
-      [web3.eth.abi.encodeFunctionCall(jsonABI[0], paras[0])],
-      [web3.eth.abi.encodeFunctionCall(jsonABI[1], paras[1])],
-      {
-        value: ethers.utils.parseEther("1.0").toHexString(),
-      }
-    );
-  });
-
-  it("Should withdraw DAI to contract", async () => {
-    const tx = await dsaWrapper.Withdraw(
-      2,
-      ["COMPOUND-A"],
-      ["BASIC-A"],
-      [web3.eth.abi.encodeFunctionCall(jsonABI[0], paras[0])],
-      [web3.eth.abi.encodeFunctionCall(jsonABI[1], paras[1])],
-      [
-        web3.eth.abi.encodeFunctionCall(jsonABI[2], [
-          daiAddr,
-          `5000000000`,
-          owner.address,
-          "0",
-          "0",
-        ]),
-      ],
+      ["COMPOUND-A", "COMPOUND-A", "BASIC-A"],
+      [deposit_calldata, borrow_calldata, withdraw_calldata],
       {
         value: ethers.utils.parseEther("1.0").toHexString(),
       }
