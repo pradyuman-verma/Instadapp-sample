@@ -90,5 +90,6 @@ describe("DSA-sample", function () {
         value: ethers.utils.parseEther("1.0").toHexString(),
       }
     );
+    //console.log(tx);
   });
 });
